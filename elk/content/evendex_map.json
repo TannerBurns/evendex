@@ -1,0 +1,31 @@
+PUT /evendex
+{
+  "mappings": {
+    "doc": {
+      "properties": {
+        "event_id": {"type": "integer"},
+        "name": {"type": "keyword"},
+        "event_created": {"type": "date"},
+        "content_id": {"type": "integer"},
+        "content_created": {"type": "date"},
+        "tag": {"type": "keyword"},
+        "content_version": {"type": "integer"},
+        "title": {"type": "keyword"},
+        "status": {"type": "keyword"},
+        "comment_id": {"type": "integer"},
+        "comment_version": {"type": "integer"},
+        "body": {"type": "keyword"},
+        "comment_created": {"type": "keyword"},
+        "comment_modified": {"type": "keyword"},
+        "labels": {
+          "type": "nested",
+          "properties": {
+            "label_id": { "type": "integer" },
+            "created":  { "type": "date" },
+            "label": { "type": "keyword"}
+          }
+        }
+      }
+    }
+  }
+}
