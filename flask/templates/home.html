@@ -35,9 +35,9 @@
                 <h4><span class="glyphicon glyphicon-th-list"></span> EvenDex</h4><br>
                 <form action="/events" method="post">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="New Event.." name="new_event">
+                        <input type="text" class="form-control" placeholder="New Event.." name="make_event">
                         <span class="input-group-btn">
-                        <button class="btn btn-default" type="submit">
+                        <button class="btn btn-default" type="submit" name="submit1" value="new_event">
                             <span class="glyphicon glyphicon-plus"></span>
                         </button>
                         </span> 
@@ -47,7 +47,7 @@
                 <form action="/events" method="post">
                     {% if events.get("count") > 0 %}   
                         {% for event in events.get("events")|reverse %}
-                            <button type="submit" class="form-control btn btn-primary" name='{{ event.get("event_id") }}'>{{ event.get("name") }}</button><br><br>
+                            <button type="submit" name="submit2" value='{{ event.get("event_id") }}' class="form-control btn btn-primary">{{ event.get("name") }}</button><br><br>
                         {% endfor %}
                     {% endif %}
                 </form>
@@ -78,9 +78,9 @@
                 </nav>
                 <form action="/events" method="post">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="New Topic.." name='new_content_{{ event.get("event").get("event_id") }}'>
+                        <input type="text" class="form-control" placeholder="New Topic.." name='make_content'>
                         <span class="input-group-btn">
-                        <button class="btn btn-default" type="submit">
+                        <button class="btn btn-default" type="submit" name="submit3" value='{{ event.get("event").get("event_id") }}'>
                             <span class="glyphicon glyphicon-plus"></span>
                         </button>
                         </span> 
@@ -118,9 +118,9 @@
                                                         <div class="form-group form-inline">
                                                             <div class="input-group">
                                                                 <span class="input-group-addon">Create Tag</span>
-                                                                <input type="text" class="form-control" name='{"label":{"event_id":{{ event.get("event").get("event_id") }}, "content_id": {{ content.get("content_id") }},  "comment_id": {{ comment.get("comment_id") }} }}' placeholder="Example">
+                                                                <input type="text" class="form-control" name='make_label' placeholder="Example">
                                                             </div>
-                                                            <button type="submit" class="btn btn-success">Submit</button>
+                                                            <button type="submit" class="btn btn-success" name="submit4" value='{"label":{"event_id":{{ event.get("event").get("event_id") }}, "content_id": {{ content.get("content_id") }},  "comment_id": {{ comment.get("comment_id") }} }}'>Submit</button>
                                                         </div>    
                                                     </form>
                                                 </div>
@@ -144,9 +144,9 @@
                             <div class="collapse" id='content_{{ content.get("content_id") }}'>
                                 <h4>Add Comment:</h4>
                                     <div class="form-group">
-                                    <textarea class="form-control" rows="3" required name='{"comment":{"event_id":{{ event.get("event").get("event_id") }}, "content_id": {{ content.get("content_id") }} }}'></textarea>
+                                    <textarea class="form-control" rows="3" required name='make_comment'></textarea>
                                     </div>
-                                    <button type="submit" class="btn btn-success">Submit</button>
+                                    <button type="submit" class="btn btn-success" name="submit5" value='{"comment":{"event_id":{{ event.get("event").get("event_id") }}, "content_id": {{ content.get("content_id") }} }}'>Submit</button>
                                 <br><br>
                             </div>
                         </form>

@@ -20,14 +20,14 @@ func initLogging(
 	errorHandle io.Writer,
 	fatalHandle io.Writer,
 ) {
-	Debug = log.New(debugHandle, "SCOPE - DEBUG: ",
+	Debug = log.New(debugHandle, "EVENDEX - DEBUG: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
-	Info = log.New(infoHandle, "SCOPE - INFO: ",
+	Info = log.New(infoHandle, "EVENDEX - INFO: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
-	Warning = log.New(warningHandle, "SCOPE - WARNING: ",
+	Warning = log.New(warningHandle, "EVENDEX - WARNING: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
-	Error = log.New(errorHandle, "SCOPE - ERROR: ",
+	Error = log.New(errorHandle, "EVENDEX - ERROR: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
-	Fatal = log.New(fatalHandle, "SCOPE - FATAL: ",
+	Fatal = log.New(fatalHandle, "EVENDEX - FATAL: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
 }
