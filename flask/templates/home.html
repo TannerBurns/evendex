@@ -32,26 +32,36 @@
     <div class="wrapper">      
         <nav id="sidebar">
             <div class="sidebar-content">
-                <h4><span class="glyphicon glyphicon-th-list"></span> EvenDex</h4><br>
-                <form action="/events" method="post">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="New Event.." name="make_event">
-                        <span class="input-group-btn">
-                        <button class="btn btn-default" type="submit" name="submit1" value="new_event">
-                            <span class="glyphicon glyphicon-plus"></span>
-                        </button>
-                        </span> 
-                    </div>
-                </form>
-                <br><br>
-                <form action="/events" method="post">
-                    {% if events.get("count") > 0 %}   
-                        {% for event in events.get("events")|reverse %}
-                            <button type="submit" name="submit2" value='{{ event.get("event_id") }}' class="form-control btn btn-primary">{{ event.get("name") }}</button><br><br>
-                        {% endfor %}
-                    {% endif %}
-                </form>
-                <br>
+                <div id="myDIV" class="header">
+                    <h4 style="magin:5px"><span class="glyphicon glyphicon-th-list"></span> EvenDex</h4><br>
+                    <form action="/events" method="post">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="New Event.." name="make_event">
+                            <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit" name="submit1" value="new_event">
+                                <span class="glyphicon glyphicon-plus"></span>
+                            </button>
+                            </span> 
+                        </div>
+                    </form>
+                </div>
+                <hr>
+                {% if events.get("count") > 0 %}
+                    <form action="/events" method="post">
+                        <ul id="myUL">
+                            {% for event in events.get("events")|reverse %}
+                                <div class="input-group">
+                                    <button class="btn btn-info form-control" type="submit" name="submit2" value='{{ event.get("event_id") }}'>{{ event.get("name") }}</button>
+                                    <span class="input-group-btn">
+                                    <button class="btn btn-default" type="submit" name="submit7" value="new_event">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </button>
+                                    </span> 
+                                </div>
+                            {% endfor %}
+                        </ul>
+                    </form>
+                {% endif %}
                 <hr style="border-color:white;">
                 <center><h4><a href="http://localhost:5601" target="_blank">Kibana</a></h4></center>
             </div>

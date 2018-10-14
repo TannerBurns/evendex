@@ -129,7 +129,7 @@ func iniTables(db *sql.DB) {
 		CREATE TABLE content (
 			content_id SERIAL PRIMARY KEY,
 			event_id INTEGER NOT NULL,
-			FOREIGN KEY (event_id) REFERENCES events (event_id),
+			FOREIGN KEY (event_id) REFERENCES events (event_id) ON DELETE CASCADE,
 			created VARCHAR(255),
 			status VARCHAR(255),
 			version INTEGER NOT NULL,
@@ -142,7 +142,7 @@ func iniTables(db *sql.DB) {
 		CREATE TABLE comment (
 			comment_id SERIAL PRIMARY KEY,
 			content_id INTEGER NOT NULL,
-			FOREIGN KEY (content_id) REFERENCES content (content_id),
+			FOREIGN KEY (content_id) REFERENCES content (content_id) ON DELETE CASCADE,
 			version INTEGER NOT NULL,
 			created VARCHAR(255) NOT NULL,
 			modified VARCHAR(255) NOT NULL,
@@ -154,9 +154,9 @@ func iniTables(db *sql.DB) {
 		CREATE TABLE labels (
 			label_id SERIAL PRIMARY KEY,
 			content_id INTEGER NOT NULL,
-			FOREIGN KEY (content_id) REFERENCES content (content_id),
+			FOREIGN KEY (content_id) REFERENCES content (content_id) ON DELETE CASCADE,
 			comment_id INTEGER NOT NULL,
-			FOREIGN KEY (comment_id) REFERENCES comment (comment_id),
+			FOREIGN KEY (comment_id) REFERENCES comment (comment_id) ON DELETE CASCADE,
 			created VARCHAR(255) NOT NULL,
 			label TEXT
 		)
