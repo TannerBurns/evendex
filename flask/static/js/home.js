@@ -1,13 +1,4 @@
 
-$(document).ready(function() 
-{
-    $('#menunav li').click(function(e) 
-    { 
-        $("#menunav li").removeClass("active");
-        $("#menunav li").eq($(this).attr("id")).addClass('active');
-    });
-});
-
 $(document).ready(function () {
     $('#sidebarCollapse').on('click', function () {
         $('#sidebar').toggleClass('active');

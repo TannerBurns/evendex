@@ -38,39 +38,32 @@ def events():
             title = request.form.get("make_content")
             eventid =int(request.form.get("submit3"))
             resp = requests.get(BASE_URL+"api/v1/event/{0}/content?title={1}".format(eventid, title))
-            if resp.status_code == 200:
-                eventid = int(resp.json().get("event").get("event_id"))
+            eventid = int(eventid)
         elif request.form.get("submit4"):
             label = request.form.get("make_label")
             dat = json.loads(request.form.get("submit4"))
             url = BASE_URL+"api/v1/event/{0}/content/{1}/comment/{2}/label?label={3}".format(dat.get("label").get("event_id"), dat.get("label").get("content_id"), dat.get("label").get("comment_id"), label)
             resp = requests.get(url)
-            if resp.status_code == 200:
-                eventid = int(dat.get("label").get("event_id"))
+            eventid = int(dat.get("label").get("event_id"))
         elif request.form.get("submit5"):
             comment = request.form.get("make_comment")    
             dat = json.loads(request.form.get("submit5"))
             body = {"body": comment}
             url = BASE_URL+"api/v1/event/{0}/content/{1}/comment".format(dat.get("comment").get("event_id"), dat.get("comment").get("content_id"))
             resp = requests.post(url, json=body)
-            print(resp)
-            if resp.status_code == 200:
-                eventid = int(resp.json().get("event").get("event_id"))
+            eventid = int(dat.get("comment").get("event_id"))
         elif request.form.get("submit6"):
             dat = json.loads(request.form.get("submit6"))
-            print(dat)
             url = BASE_URL+"api/v1/event/{0}/content/{1}/comment/{2}/label/{3}".format(dat.get("label").get("event_id"), dat.get("label").get("content_id"), dat.get("label").get("comment_id"), dat.get("label").get("label_id"))
             resp = requests.delete(url)
-            if resp.status_code == 200:
-                print(resp.json())
+            eventid = int(dat.get("label").get("event_id"))
         
-
     resp = requests.get(BASE_URL+"api/v1/events")
     if resp.status_code == 200:
         events = resp.json()
 
     if eventid == 0 and events.get("count") > 0:
-        eventid = events.get("events")[0].get("event_id")
+        eventid = events.get("events")[-1].get("event_id")
 
     if eventid > 0:
         resp = requests.get(BASE_URL+"api/v1/event/{0}".format(eventid))
