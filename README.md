@@ -8,9 +8,17 @@
 
         go build views.go model.go indexer.go
 
-        ./views /path/to/config/dev.conf
+        ./views /path/to/config/config.conf
 
         go api hosted: http://localhost:8000/api/v1/events
+        
+        #Example Config.conf:
+        
+            [postgresql]
+            host=localhost
+            database=evendex
+            user=postgres
+            password=password
     
     # Flask
 
