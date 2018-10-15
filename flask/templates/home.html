@@ -53,7 +53,7 @@
                                 <div class="input-group">
                                     <button class="btn btn-info form-control" type="submit" name="submit2" value='{{ event.get("event_id") }}'>{{ event.get("name") }}</button>
                                     <span class="input-group-btn">
-                                    <button class="btn btn-default" type="submit" name="submit7" value="new_event">
+                                    <button class="btn btn-default" type="submit" name="submit7" value='{{ event.get("event_id") }}' onclick="return submitResult();">
                                         <span class="glyphicon glyphicon-remove"></span>
                                     </button>
                                     </span> 

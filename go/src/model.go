@@ -331,25 +331,35 @@ func updateComment(db *sql.DB, commentID int, body string) (contentID int) {
 
 /*
 	delete functions:
+		delete an entire event and all connected content - deleteEvent(db, eventID)
 		delete a label from a comment - deleteLabel(db, labelID)
 */
-func deleteLabel(db *sql.DB, labelID int) (err error) {
+func deleteLabel(db *sql.DB, labelID int) (retErr error) {
 	row := ""
 
 	query := fmt.Sprintf("DELETE FROM labels WHERE label_id='%d' RETURNING (content_id, comment_id)", labelID)
-	err = db.QueryRow(query).Scan(&row)
+	err := db.QueryRow(query).Scan(&row)
 	if err == nil {
 		contentID, err := strconv.Atoi(string(row[1]))
 		if err != nil {
-			Fatal.Println(err)
+			retErr = err
+			return
 		}
 		commentID, err := strconv.Atoi(string(row[3]))
 		if err != nil {
-			Fatal.Println(err)
+			retErr = err
+			return
 		}
 		increaseContentVersion(db, contentID)
 		increaseCommentVersion(db, commentID)
 	}
+	retErr = err
+	return
+}
+
+func deleteEvent(db *sql.DB, eventID int) (err error) {
+	query := fmt.Sprintf("DELETE FROM events WHERE event_id='%d' RETURNING event_id", eventID)
+	_, err = db.Query(query)
 	return
 }
 

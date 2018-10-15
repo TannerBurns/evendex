@@ -345,6 +345,30 @@ func apiDeleteLabel(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func apiDeleteEvent(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	eventID, err := strconv.Atoi(params["eventId"])
+	if err != nil {
+		Error.Println("apiDeleteEvent", err)
+		http.Error(w, fmt.Sprintf("ERROR - FAILED DELETE EVENT - %d", eventID), 400)
+	} else {
+		err = deleteEvent(db, eventID)
+		if err == nil {
+			json.NewEncoder(w).Encode(Response{fmt.Sprintf("SUCCESS - EVENT DELETE - EVENT_ID: %d", eventID)})
+		} else {
+			Error.Println("apiDeleteEvent", err)
+			http.Error(w, fmt.Sprintf("ERROR - FAILED DELETE EVENT - %s", eventID), 400)
+		}
+	}
+}
+
 func apiIndexer(w http.ResponseWriter, r *http.Request) {
 	db, err := connect()
 	if err != nil {
@@ -377,8 +401,9 @@ func main() {
 	router.HandleFunc("/api/v1/events", apiGetEvents).Methods("GET") // get events 50 at a time
 
 	// event routes
-	router.HandleFunc("/api/v1/event", apiCreateEvent).Methods("GET")                                                                      // create an event
-	router.HandleFunc("/api/v1/event/{eventId}", apiGetEvent).Methods("GET")                                                               // get event by ID
+	router.HandleFunc("/api/v1/event", apiCreateEvent).Methods("GET") // create an event
+	router.HandleFunc("/api/v1/event/{eventId}", apiGetEvent).Methods("GET")
+	router.HandleFunc("/api/v1/event/{eventId}", apiDeleteEvent).Methods("DELETE")                                                         // get event by ID
 	router.HandleFunc("/api/v1/event/{eventId}/content", apiGetEventContent).Methods("GET")                                                // create content for an event
 	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}", apiGetContent).Methods("GET")                                         // get content by ID or Tag
 	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment", apiPostComment).Methods("POST")                               // create comment

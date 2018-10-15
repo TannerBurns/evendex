@@ -38,7 +38,6 @@ def events():
             title = request.form.get("make_content")
             eventid =int(request.form.get("submit3"))
             resp = requests.get(BASE_URL+"api/v1/event/{0}/content?title={1}".format(eventid, title))
-            eventid = int(eventid)
         elif request.form.get("submit4"):
             label = request.form.get("make_label")
             dat = json.loads(request.form.get("submit4"))
@@ -57,6 +56,10 @@ def events():
             url = BASE_URL+"api/v1/event/{0}/content/{1}/comment/{2}/label/{3}".format(dat.get("label").get("event_id"), dat.get("label").get("content_id"), dat.get("label").get("comment_id"), dat.get("label").get("label_id"))
             resp = requests.delete(url)
             eventid = int(dat.get("label").get("event_id"))
+        elif request.form.get("submit7"):
+            eventid = int(request.form.get("submit7"))
+            resp = requests.delete(BASE_URL+"api/v1/event/{0}".format(eventid))
+            eventid = 0
         
     resp = requests.get(BASE_URL+"api/v1/events")
     if resp.status_code == 200:
