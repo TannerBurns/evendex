@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go build src/views.go src/db/model.go src/db/indexer.go src/logger/logger.go src/db/database.go
+go build src/views.go src/model.go src/indexer.go src/logger.go src/database.go

@@ -51,6 +51,18 @@ func connect() (db *sql.DB, err error) {
 
 // create tables for evendex database
 func iniTables(db *sql.DB) {
+	userTable := `
+		CREATE TABLE users (
+			user_id SERIAL PRIMARY KEY,
+			first_name VARCHAR(255) NOT NULL,
+			last_name VARCHAR(255) NOT NULL,
+			email VARCHAR(255) NOT NULL,
+			avatar TEXT,
+			handle VARCHAR(64) NOT NULL,
+			privileges VARCHAR(64) NOT NULL
+		)
+	`
+
 	eventTable := `
 		CREATE TABLE events (
 			event_id SERIAL PRIMARY KEY,
