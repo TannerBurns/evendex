@@ -162,13 +162,13 @@ input[type="text"]::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
   }
   
   /* Remove margins and padding from the list */
-  ul {
+  #sidebar ul {
     margin: 0;
     padding: 0;
   }
   
   /* Style the list items */
-  ul li {
+  #sidebar ul li {
     cursor: pointer;
     position: relative;
     padding: 12px 8px 12px 40px;
@@ -185,12 +185,12 @@ input[type="text"]::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
   }
   
   /* Set all odd list items to a different color (zebra-stripes) */
-  ul li:nth-child(odd) {
+  #sidebar ul li:nth-child(odd) {
     background: #f9f9f9;
   }
   
   /* Darker background-color on hover */
-  ul li:hover {
+  #sidebar ul li:hover {
     background: #ddd;
   }
 

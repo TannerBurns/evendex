@@ -1,4 +1,3 @@
-PUT /evendex
 {
   "mappings": {
     "doc": {

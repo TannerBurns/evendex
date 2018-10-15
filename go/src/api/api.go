@@ -369,22 +369,6 @@ func apiDeleteEvent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func apiIndexer(w http.ResponseWriter, r *http.Request) {
-	db, err := connect()
-	if err != nil {
-		Fatal.Println(err)
-	}
-	defer db.Close()
-
-	err = IndexComments(db)
-	if err != nil {
-		Info.Println("apiIndexer", err)
-		http.Error(w, "ERROR - FAILED TO INDEX", 400)
-	} else {
-		json.NewEncoder(w).Encode(Response{"SUCCESS - INDEXED"})
-	}
-}
-
 func main() {
 	PORT := 8000
 	LOGFILE := "Log_Views.log"
@@ -415,8 +399,6 @@ func main() {
 	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label", apiCreateLabel).Methods("GET")              // create label for a comment
 	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label/{labelId}", apiGetLabel).Methods("GET")       // get label
 	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label/{labelId}", apiDeleteLabel).Methods("DELETE") // delete label
-
-	router.HandleFunc("/api/v1/indexer", apiIndexer).Methods("GET")
 
 	fmt.Println(fmt.Sprintf(" * Server hosted on http://127.0.0.1:%d", PORT))
 	fmt.Println(fmt.Sprintf(" * Logging output -> %s", LOGFILE))
