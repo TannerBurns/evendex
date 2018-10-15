@@ -390,12 +390,16 @@ func main() {
 	LOGFILE := "Log_Views.log"
 	router := mux.NewRouter()
 
+	initLogging(os.Stdout, os.Stdout, os.Stdout, os.Stderr, os.Stderr)
 	f, err := os.OpenFile(LOGFILE, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
 	defer f.Close()
 	log.SetOutput(f)
+	Info.SetOutput(f)
+	Error.SetOutput(f)
+	Fatal.SetOutput(f)
 
 	// events paginated route
 	router.HandleFunc("/api/v1/events", apiGetEvents).Methods("GET") // get events 50 at a time
