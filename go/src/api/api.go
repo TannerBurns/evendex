@@ -100,7 +100,7 @@ func apiGetEvents(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func apiGetEventContent(w http.ResponseWriter, r *http.Request) {
+func apiCreateContent(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	db, err := connect()
@@ -364,7 +364,55 @@ func apiDeleteEvent(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(Response{fmt.Sprintf("SUCCESS - EVENT DELETE - EVENT_ID: %d", eventID)})
 		} else {
 			Error.Println("apiDeleteEvent", err)
-			http.Error(w, fmt.Sprintf("ERROR - FAILED DELETE EVENT - %s", eventID), 400)
+			http.Error(w, fmt.Sprintf("ERROR - FAILED DELETE EVENT - %d", eventID), 400)
+		}
+	}
+}
+
+func apiDeleteContent(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	contentID, err := strconv.Atoi(params["contentId"])
+	if err != nil {
+		Error.Println("apiDeleteContent", err)
+		http.Error(w, fmt.Sprintf("ERROR - FAILED DELETE CONTENT - %d", contentID), 400)
+	} else {
+		err = deleteContent(db, contentID)
+		if err == nil {
+			json.NewEncoder(w).Encode(Response{fmt.Sprintf("SUCCESS - CONTENT DELETE - CONTENT_ID: %d", contentID)})
+		} else {
+			Error.Println("apiDeleteContent", err)
+			http.Error(w, fmt.Sprintf("ERROR - FAILED DELETE CONTENT - %d", contentID), 400)
+		}
+	}
+}
+
+func apiDeleteComment(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	commentID, err := strconv.Atoi(params["commentId"])
+	if err != nil {
+		Error.Println("apiDeleteComment", err)
+		http.Error(w, fmt.Sprintf("ERROR - FAILED DELETE COMMENT - %d", commentID), 400)
+	} else {
+		err = deleteComment(db, commentID)
+		if err == nil {
+			json.NewEncoder(w).Encode(Response{fmt.Sprintf("SUCCESS - COMMENT DELETE - COMMENT_ID: %d", commentID)})
+		} else {
+			Error.Println("apiDeleteComment", err)
+			http.Error(w, fmt.Sprintf("ERROR - FAILED DELETE COMMENT - %d", commentID), 400)
 		}
 	}
 }
@@ -391,11 +439,13 @@ func main() {
 	// event routes
 	router.HandleFunc("/api/v1/event", apiCreateEvent).Methods("GET") // create an event
 	router.HandleFunc("/api/v1/event/{eventId}", apiGetEvent).Methods("GET")
-	router.HandleFunc("/api/v1/event/{eventId}", apiDeleteEvent).Methods("DELETE")                                                         // get event by ID
-	router.HandleFunc("/api/v1/event/{eventId}/content", apiGetEventContent).Methods("GET")                                                // create content for an event
-	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}", apiGetContent).Methods("GET")                                         // get content by ID or Tag
-	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment", apiPostComment).Methods("POST")                               // create comment
-	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}", apiGetComment).Methods("GET")                     // get comment
+	router.HandleFunc("/api/v1/event/{eventId}", apiDeleteEvent).Methods("DELETE")        // get event by ID
+	router.HandleFunc("/api/v1/event/{eventId}/content", apiCreateContent).Methods("GET") // create content for an event
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}", apiGetContent).Methods("GET")
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}", apiDeleteContent).Methods("DELETE")     // get content by ID or Tag
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment", apiPostComment).Methods("POST") // create comment
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}", apiGetComment).Methods("GET")
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}", apiDeleteComment).Methods("DELETE")               // get comment
 	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label", apiCreateLabel).Methods("GET")              // create label for a comment
 	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label/{labelId}", apiGetLabel).Methods("GET")       // get label
 	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label/{labelId}", apiDeleteLabel).Methods("DELETE") // delete label

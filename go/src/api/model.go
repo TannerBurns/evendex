@@ -228,6 +228,8 @@ func updateComment(db *sql.DB, commentID int, body string) (contentID int) {
 /*
 	delete functions:
 		delete an entire event and all connected content - deleteEvent(db, eventID)
+		delete entire content and all connected content - deleteContent(db, contentID)
+		delete a comment and all labels associated - deleteComment(db, commentID)s
 		delete a label from a comment - deleteLabel(db, labelID)
 */
 func deleteLabel(db *sql.DB, labelID int) (retErr error) {
@@ -256,6 +258,25 @@ func deleteLabel(db *sql.DB, labelID int) (retErr error) {
 func deleteEvent(db *sql.DB, eventID int) (err error) {
 	query := fmt.Sprintf("DELETE FROM events WHERE event_id='%d' RETURNING event_id", eventID)
 	_, err = db.Query(query)
+	return
+}
+
+func deleteContent(db *sql.DB, contentID int) (err error) {
+	query := fmt.Sprintf("DELETE FROM content WHERE content_id='%d' RETURNING event_id", contentID)
+	_, err = db.Query(query)
+	return
+}
+
+func deleteComment(db *sql.DB, commentID int) (err error) {
+	ret := ""
+	query := fmt.Sprintf("DELETE FROM comment WHERE comment_id='%d' RETURNING content_id", commentID)
+	err = db.QueryRow(query).Scan(&ret)
+	contentID, err := strconv.Atoi(string(ret))
+	if err != nil {
+		Error.Println(err)
+		return
+	}
+	increaseContentVersion(db, contentID)
 	return
 }
 

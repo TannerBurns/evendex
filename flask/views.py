@@ -60,6 +60,14 @@ def events():
             eventid = int(request.form.get("submit7"))
             resp = requests.delete(BASE_URL+"api/v1/event/{0}".format(eventid))
             eventid = 0
+        elif request.form.get("submit8"):
+            dat = json.loads(request.form.get("submit8"))
+            resp = requests.delete(BASE_URL+"api/v1/event/{0}/content/{1}".format(dat.get("content").get("event_id"), dat.get("content").get("content_id")))
+            eventid = 0
+        elif request.form.get("submit9"):
+            dat = json.loads(request.form.get("submit9"))
+            resp = requests.delete(BASE_URL+"api/v1/event/{0}/content/{1}/comment/{2}".format(dat.get("comment").get("event_id"), dat.get("comment").get("content_id"), dat.get("comment").get("comment_id")))
+            eventid = 0
         
     resp = requests.get(BASE_URL+"api/v1/events")
     if resp.status_code == 200:
