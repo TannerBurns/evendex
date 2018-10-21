@@ -44,8 +44,11 @@ func connect() (db *sql.DB, err error) {
 			}
 		}
 	}
-
-	db, err = sql.Open("postgres", fmt.Sprintf("host=%s dbname=%s user=%s password=%s sslmode=disable", host, database, user, password))
+	if password == "" {
+		db, err = sql.Open("postgres", fmt.Sprintf("host=%s dbname=%s user=%s sslmode=disable", host, database, user))
+	} else {
+		db, err = sql.Open("postgres", fmt.Sprintf("host=%s dbname=%s user=%s password=%s sslmode=disable", host, database, user, password))
+	}
 	return
 }
 
