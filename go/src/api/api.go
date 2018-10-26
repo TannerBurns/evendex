@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -417,8 +418,105 @@ func apiDeleteComment(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func apiStatusCreated(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	contentID, err := strconv.Atoi(params["contentId"])
+	if err != nil {
+		Error.Println("apiStatusCreated", err)
+		http.Error(w, fmt.Sprintf("ERROR - FAILED STATUS UPDATE - %d", contentID), 400)
+	} else {
+		_, err := updateStatus(db, contentID, "Created")
+		if err == nil {
+			json.NewEncoder(w).Encode(Response{fmt.Sprintf("SUCCESS - STATUS UPDATE - CONTENT_ID: %d", contentID)})
+		} else {
+			Error.Println("apiStatusCreated", err)
+			http.Error(w, fmt.Sprintf("ERROR - FAILED STATUS UPDATE - %d", contentID), 400)
+		}
+	}
+}
+
+func apiStatusPause(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	contentID, err := strconv.Atoi(params["contentId"])
+	if err != nil {
+		Error.Println("apiStatusPause", err)
+		http.Error(w, fmt.Sprintf("ERROR - FAILED STATUS UPDATE - %d", contentID), 400)
+	} else {
+		_, err := updateStatus(db, contentID, "Paused")
+		if err == nil {
+			json.NewEncoder(w).Encode(Response{fmt.Sprintf("SUCCESS - STATUS UPDATE - CONTENT_ID: %d", contentID)})
+		} else {
+			Error.Println("apiStatusPause", err)
+			http.Error(w, fmt.Sprintf("ERROR - FAILED STATUS UPDATE - %d", contentID), 400)
+		}
+	}
+}
+
+func apiStatusProgress(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	contentID, err := strconv.Atoi(params["contentId"])
+	if err != nil {
+		Error.Println("apiStatusProgress", err)
+		http.Error(w, fmt.Sprintf("ERROR - FAILED STATUS UPDATE - %d", contentID), 400)
+	} else {
+		_, err := updateStatus(db, contentID, "In Progress")
+		if err == nil {
+			json.NewEncoder(w).Encode(Response{fmt.Sprintf("SUCCESS - STATUS UPDATE - CONTENT_ID: %d", contentID)})
+		} else {
+			Error.Println("apiStatusProgress", err)
+			http.Error(w, fmt.Sprintf("ERROR - FAILED STATUS UPDATE - %d", contentID), 400)
+		}
+	}
+}
+
+func apiStatusComplete(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	contentID, err := strconv.Atoi(params["contentId"])
+	if err != nil {
+		Error.Println("apiStatusComplete", err)
+		http.Error(w, fmt.Sprintf("ERROR - FAILED STATUS UPDATE - %d", contentID), 400)
+	} else {
+		_, err := updateStatus(db, contentID, "Complete")
+		if err == nil {
+			json.NewEncoder(w).Encode(Response{fmt.Sprintf("SUCCESS - STATUS UPDATE - CONTENT_ID: %d", contentID)})
+		} else {
+			Error.Println("apiStatusComplete", err)
+			http.Error(w, fmt.Sprintf("ERROR - FAILED STATUS UPDATE - %d", contentID), 400)
+		}
+	}
+}
+
 func main() {
 	PORT := 8000
+	HOST := "0.0.0.0"
 	LOGFILE := "Log_Views.log"
 	router := mux.NewRouter()
 
@@ -437,20 +535,33 @@ func main() {
 	router.HandleFunc("/api/v1/events", apiGetEvents).Methods("GET") // get events 50 at a time
 
 	// event routes
-	router.HandleFunc("/api/v1/event", apiCreateEvent).Methods("GET") // create an event
-	router.HandleFunc("/api/v1/event/{eventId}", apiGetEvent).Methods("GET")
-	router.HandleFunc("/api/v1/event/{eventId}", apiDeleteEvent).Methods("DELETE")        // get event by ID
-	router.HandleFunc("/api/v1/event/{eventId}/content", apiCreateContent).Methods("GET") // create content for an event
-	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}", apiGetContent).Methods("GET")
-	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}", apiDeleteContent).Methods("DELETE")     // get content by ID or Tag
-	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment", apiPostComment).Methods("POST") // create comment
-	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}", apiGetComment).Methods("GET")
-	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}", apiDeleteComment).Methods("DELETE")               // get comment
+	router.HandleFunc("/api/v1/event", apiCreateEvent).Methods("GET")                                                                      // create an event
+	router.HandleFunc("/api/v1/event/{eventId}", apiGetEvent).Methods("GET")                                                               // get event by ID
+	router.HandleFunc("/api/v1/event/{eventId}", apiDeleteEvent).Methods("DELETE")                                                         // delete event by ID
+	router.HandleFunc("/api/v1/event/{eventId}/content", apiCreateContent).Methods("GET")                                                  // create content for an event
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}", apiGetContent).Methods("GET")                                         // get content by ID or Tag
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}", apiDeleteContent).Methods("DELETE")                                   // delete content by ID
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment", apiPostComment).Methods("POST")                               // create comment
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}", apiGetComment).Methods("GET")                     // get comment by ID
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}", apiDeleteComment).Methods("DELETE")               // delete comment by ID
 	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label", apiCreateLabel).Methods("GET")              // create label for a comment
-	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label/{labelId}", apiGetLabel).Methods("GET")       // get label
-	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label/{labelId}", apiDeleteLabel).Methods("DELETE") // delete label
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label/{labelId}", apiGetLabel).Methods("GET")       // get label by ID
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/comment/{commentId}/label/{labelId}", apiDeleteLabel).Methods("DELETE") // delete label by ID
 
-	fmt.Println(fmt.Sprintf(" * Server hosted on http://127.0.0.1:%d", PORT))
+	// statuses for content
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/created", apiStatusCreated).Methods("GET")
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/pause", apiStatusPause).Methods("GET")
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/progress", apiStatusProgress).Methods("GET")
+	router.HandleFunc("/api/v1/event/{eventId}/content/{contentId}/complete", apiStatusComplete).Methods("GET")
+
+	fmt.Println(fmt.Sprintf(" * Server hosted on http://%s:%d", HOST, PORT))
 	fmt.Println(fmt.Sprintf(" * Logging output -> %s", LOGFILE))
-	Fatal.Println(http.ListenAndServe(fmt.Sprintf(":%d", PORT), router))
+
+	srvr := &http.Server{
+		Addr:         fmt.Sprintf("%s:%d", HOST, PORT),
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      router}
+	Fatal.Println(srvr.ListenAndServe())
 }

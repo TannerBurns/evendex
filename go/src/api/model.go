@@ -212,15 +212,26 @@ func createLabel(db *sql.DB, arg interface{}, commentID int, label string) (labe
 	update functions:
 		update a comment - updateComment(db, commentID, bodt) returns contentID
 */
-func updateComment(db *sql.DB, commentID int, body string) (contentID int) {
+func updateComment(db *sql.DB, commentID int, body string) (contentID int, err error) {
 	nowISO := time.Now().UTC().Format(time.RFC3339)
 	query := `UPDATE comment SET body=$1, modified=$2 WHERE comment_id=$3 RETURNING content_id`
 
-	err := db.QueryRow(query, body, nowISO, commentID).Scan(&contentID)
+	err = db.QueryRow(query, body, nowISO, commentID).Scan(&contentID)
 	if err != nil {
-		Fatal.Println(err)
+		return
 	}
 	increaseCommentVersion(db, commentID)
+	increaseContentVersion(db, contentID)
+	return
+}
+
+func updateStatus(db *sql.DB, contentID int, status string) (eventID int, err error) {
+	query := `UPDATE content SET status=$1 WHERE content_id=$2 RETURNING event_id`
+
+	err = db.QueryRow(query, status, contentID).Scan(&eventID)
+	if err != nil {
+		return
+	}
 	increaseContentVersion(db, contentID)
 	return
 }
