@@ -3,7 +3,7 @@ import json
 import random
 
 class Populator:
-    def __init__(self, events=10, content=5, comments=20, labels=2):
+    def __init__(self, events=10, content=5, comments=6, labels=2):
         self.numEvents = events
         self.numContent = content
         self.numComments = comments
@@ -16,6 +16,8 @@ class Populator:
         self.WORDS = response.content.splitlines()
     
     def generate(self):
+        statuses = ["event/{0}/content/{1}/created","event/{0}/content/{1}/pause","event/{0}/content/{1}/progress", "event/{0}/content/{1}/complete"]
+
         for i in range(0, self.numEvents):
             eventName = random.choice(self.WORDS).decode("utf-8")
             url = "http://127.0.0.1:8000/api/v1/{0}"
@@ -29,6 +31,9 @@ class Populator:
                 if not resp2.status_code == 200:
                     raise Exception("Failed to create content")
                 contentID = resp2.json().get("event").get("content")[0].get("content_id")
+                resp5 = requests.get(url.format(random.choice(statuses).format(eventID,contentID)))
+                if not resp5.status_code == 200:
+                    raise Exception("Failed to set random status")
                 for k in range(0, self.numComments):
                     comment = " ".join([random.choice(self.WORDS).decode("utf-8") for x in range(0, 16)])
                     body = {"body":comment}

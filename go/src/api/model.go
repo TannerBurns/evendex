@@ -22,6 +22,11 @@ type ResponseEvent struct {
 	Event Event `json:"event"`
 }
 
+type ResponseEventsCount struct {
+	Count  int    `json:"count"`
+	Status string `json:"status`
+}
+
 // Response Events template
 type ResponseEvents struct {
 	Count  int     `json:"count"`
@@ -380,11 +385,27 @@ func getEvent(db *sql.DB, eventID int) (response interface{}, retErr error) {
 	return
 }
 
+func getEventsCount(db *sql.DB) (response interface{}, err error) {
+	query := `SELECT COUNT(*) FROM events;`
+	count := 0
+
+	err = db.QueryRow(query).Scan(&count)
+	if err != nil {
+		return
+	}
+	if count == 0 {
+		response = ResponseEventsCount{0, "ERROR"}
+	} else {
+		response = ResponseEventsCount{count, "OK"}
+	}
+	return
+}
+
 func getEvents(db *sql.DB, offset int) (response interface{}, retErr error) {
 	var events []Event
 	counter := 0
 
-	eventRows, err := db.Query(fmt.Sprintf("SELECT * FROM events ORDER BY event_id ASC LIMIT 50 OFFSET %d;", offset))
+	eventRows, err := db.Query(fmt.Sprintf("SELECT * FROM events ORDER BY event_id DESC LIMIT 11 OFFSET %d;", offset))
 	if err != nil {
 		retErr = err
 		return

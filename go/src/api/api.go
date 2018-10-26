@@ -101,6 +101,24 @@ func apiGetEvents(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func apiGetEventsCount(w http.ResponseWriter, r *http.Request) {
+
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	resp, err := getEventsCount(db)
+	if err == nil {
+		json.NewEncoder(w).Encode(resp)
+	} else {
+		Info.Println("reqEvents", err)
+		http.Error(w, "ERROR - FAILED GET EVENTS", 400)
+	}
+
+}
+
 func apiCreateContent(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -532,7 +550,8 @@ func main() {
 	Fatal.SetOutput(f)
 
 	// events paginated route
-	router.HandleFunc("/api/v1/events", apiGetEvents).Methods("GET") // get events 50 at a time
+	router.HandleFunc("/api/v1/events", apiGetEvents).Methods("GET")            // get events 50 at a time
+	router.HandleFunc("/api/v1/events/count", apiGetEventsCount).Methods("GET") // get count of all events
 
 	// event routes
 	router.HandleFunc("/api/v1/event", apiCreateEvent).Methods("GET")                                                                      // create an event
