@@ -534,7 +534,7 @@ func getContent(db *sql.DB, eventID int, arg interface{}) (response interface{},
 			return
 		}
 
-		commentRows, err := db.Query(fmt.Sprintf("SELECT * FROM comment WHERE content_id='%d'", contentID))
+		commentRows, err := db.Query(fmt.Sprintf("SELECT * FROM comment WHERE content_id='%d' ORDER BY comment_id ASC", contentID))
 		if err != nil {
 			retErr = err
 			return
@@ -595,7 +595,7 @@ func getContent(db *sql.DB, eventID int, arg interface{}) (response interface{},
 
 	case int:
 		contentID = a
-		commentRows, err := db.Query(fmt.Sprintf("SELECT * FROM comment WHERE content_id='%d'", contentID))
+		commentRows, err := db.Query(fmt.Sprintf("SELECT * FROM comment WHERE content_id='%d' ORDER BY comment_id ASC", contentID))
 		if err != nil {
 			retErr = err
 			return
