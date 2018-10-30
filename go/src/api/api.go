@@ -91,7 +91,12 @@ func apiGetEvents(w http.ResponseWriter, r *http.Request) {
 		offset = 0
 	}
 
-	events, err := getEvents(db, offset)
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		limit = 8
+	}
+
+	events, err := getEvents(db, offset, limit)
 	if err == nil {
 		json.NewEncoder(w).Encode(events)
 	} else {

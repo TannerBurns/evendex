@@ -401,11 +401,11 @@ func getEventsCount(db *sql.DB) (response interface{}, err error) {
 	return
 }
 
-func getEvents(db *sql.DB, offset int) (response interface{}, retErr error) {
+func getEvents(db *sql.DB, offset int, limit int) (response interface{}, retErr error) {
 	var events []Event
 	counter := 0
 
-	eventRows, err := db.Query(fmt.Sprintf("SELECT * FROM events ORDER BY event_id DESC LIMIT 11 OFFSET %d;", offset))
+	eventRows, err := db.Query(fmt.Sprintf("SELECT * FROM events ORDER BY event_id DESC LIMIT %d OFFSET %d;", limit, offset))
 	if err != nil {
 		retErr = err
 		return
