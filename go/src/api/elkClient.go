@@ -77,3 +77,22 @@ func postDoc(name string, jsonData string) (response string) {
 	response = string(body)
 	return
 }
+
+func updateByQuery(name string, query []byte) (response string) {
+	url := "http://localhost:9200/" + name + "/_update_by_query"
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(query))
+	req.Header.Set("X-Custom-Header", "Go-elkClient")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	response = string(body)
+	return
+}

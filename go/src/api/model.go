@@ -240,6 +240,7 @@ func updateStatus(db *sql.DB, contentID int, status string) (eventID int, err er
 		return
 	}
 	increaseContentVersion(db, contentID)
+	go updateEsStatus(contentID, status)
 	return
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 // IndexedComment flattened for ES
@@ -21,6 +22,28 @@ type IndexedComment struct {
 	Body            string `json:"body"`
 	CommentCreated  string `json:"comment_created"`
 	CommentModified string `json:"comment_modified"`
+}
+
+type UpdateByQuery struct {
+	//Query  Query  `json:"query"`
+	Script Script `json:"script"`
+}
+
+type Query struct {
+	Bool BoolQuery `json:"bool"`
+}
+
+type BoolQuery struct {
+	Must []Term `json:"must"`
+}
+
+type Term struct {
+	term map[string]int `json:"term"`
+}
+
+type Script struct {
+	source string `"json:source"`
+	lang   string `"json:lang"`
 }
 
 func addDoc(eventID int, contentID int, commentID int) {
@@ -48,14 +71,14 @@ func addDoc(eventID int, contentID int, commentID int) {
 	// get all event data
 	row, err := db.Query("SELECT created, name FROM events WHERE event_id=$1", eventID)
 	if err != nil {
-		Error.Printf("ERROR - elkmodel - addDoc - Failed to query event - %s", err)
+		Error.Printf("ERROR - esmodel - addDoc - Failed to query event - %s", err)
 		return
 	}
 	defer row.Close()
 	for row.Next() {
 		err = row.Scan(&eventCreated, &name)
 		if err != nil {
-			Error.Printf("ERROR - elkmodel - addDoc - Failed to scan event - %s", err)
+			Error.Printf("ERROR - esmodel - addDoc - Failed to scan event - %s", err)
 			return
 		}
 	}
@@ -63,14 +86,14 @@ func addDoc(eventID int, contentID int, commentID int) {
 	// get all content data
 	row, err = db.Query("SELECT created, modified, status, version, title, tag FROM content WHERE content_id=$1", contentID)
 	if err != nil {
-		Error.Printf("ERROR - elkmodel - addDoc - Failed to query content - %s", err)
+		Error.Printf("ERROR - esmodel - addDoc - Failed to query content - %s", err)
 		return
 	}
 	defer row.Close()
 	for row.Next() {
 		err = row.Scan(&contentCreated, &contentModified, &status, &contentVersion, &title, &tag)
 		if err != nil {
-			Error.Printf("ERROR - elkmodel - addDoc - Failed to scan content - %s", err)
+			Error.Printf("ERROR - esmodel - addDoc - Failed to scan content - %s", err)
 			return
 		}
 	}
@@ -78,14 +101,14 @@ func addDoc(eventID int, contentID int, commentID int) {
 	// get all comment data
 	row, err = db.Query("SELECT version, created, modified, body FROM comment WHERE comment_id=$1", commentID)
 	if err != nil {
-		Error.Printf("ERROR - elkmodel - addDoc - Failed to query comment - %s", err)
+		Error.Printf("ERROR - esmodel - addDoc - Failed to query comment - %s", err)
 		return
 	}
 	defer row.Close()
 	for row.Next() {
 		err = row.Scan(&commentVersion, &commentCreated, &commentModified, &body)
 		if err != nil {
-			Error.Printf("ERROR - elkmodel - addDoc - Failed to scan comment - %s", err)
+			Error.Printf("ERROR - esmodel - addDoc - Failed to scan comment - %s", err)
 			return
 		}
 	}
@@ -94,9 +117,16 @@ func addDoc(eventID int, contentID int, commentID int) {
 
 	dat, err := json.Marshal(indComment)
 	if err != nil {
-		Fatal.Println(err)
+		Error.Printf("ERROR - esmodel - addDoc - Failed to Marshal comment - %s", err)
+		return
 	}
 
 	_ = postDoc("evendex", string(dat))
 
+}
+
+func updateEsStatus(contentID int, status string) {
+	query := []byte(fmt.Sprintf(`{"query": {"bool": {"must": [{"term": {"content_id": %d}}]}}, "script": {"source": "ctx._source.status='%s'", "lang": "painless"}}`, contentID, status))
+
+	_ := updateByQuery("evendex", query)
 }
