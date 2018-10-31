@@ -82,6 +82,7 @@ func iniTables(db *sql.DB) {
 			event_id INTEGER NOT NULL,
 			FOREIGN KEY (event_id) REFERENCES events (event_id) ON DELETE CASCADE,
 			created VARCHAR(255),
+			modified VARCHAR(255),
 			status VARCHAR(255),
 			version INTEGER NOT NULL,
 			title TEXT,

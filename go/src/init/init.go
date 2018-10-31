@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -20,9 +21,17 @@ func main() {
 	err = db.Ping()
 	checkFatal(err)
 
-	Info.Printf("Connected!")
+	Info.Printf("DB - Connected!")
 
 	// create tables
 	iniTables(db)
+
+	Info.Printf("Creating ES Index")
+	dat, err := ioutil.ReadFile("src/init/mapping/evendex_map.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	resp := createIndex("evendex", string(dat))
+	Info.Printf(resp)
 
 }

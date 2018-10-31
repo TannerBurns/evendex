@@ -52,6 +52,7 @@ type Event struct {
 type Content struct {
 	ContentID int       `json:"content_id"`
 	Created   string    `json:"created"`
+	Modified  string    `json:"modified"`
 	Version   int       `json:"version"`
 	Status    string    `json:"status"`
 	Title     string    `json:"title"`
@@ -102,10 +103,10 @@ func createEvent(db *sql.DB, name string) (event interface{}, retErr error) {
 func createContent(db *sql.DB, eventID int, title string) (resp interface{}, retErr error) {
 	contentID := 0
 	nowISO := time.Now().UTC().Format(time.RFC3339)
-	query := `INSERT INTO content (event_id, created, status, version, title, tag) VALUES($1, $2, $3, $4, $5, $6) RETURNING content_id;`
+	query := `INSERT INTO content (event_id, created, modified, status, version, title, tag) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING content_id;`
 
 	tag := string(createTag())
-	err := db.QueryRow(query, eventID, nowISO, "Created", 1, title, tag).Scan(&contentID)
+	err := db.QueryRow(query, eventID, nowISO, nowISO, "Created", 1, title, tag).Scan(&contentID)
 	if err != nil {
 		retErr = err
 		return
@@ -169,6 +170,7 @@ func createComment(db *sql.DB, eventID int, arg interface{}, body string) (resp 
 	}
 	resp, retErr = getContent(db, eventID, contentID)
 	increaseContentVersion(db, contentID)
+	go addDoc(eventID, contentID, commentID)
 	return
 }
 
@@ -319,11 +321,12 @@ func getEvent(db *sql.DB, eventID int) (response interface{}, retErr error) {
 		var comments []Comment
 		contentID := 0
 		contentCreated := ""
+		contentModified := ""
 		status := ""
 		contentVersion := 0
 		title := ""
 		tag := ""
-		err := contentRows.Scan(&contentID, &eventID, &contentCreated, &status, &contentVersion, &title, &tag)
+		err := contentRows.Scan(&contentID, &eventID, &contentCreated, &contentModified, &status, &contentVersion, &title, &tag)
 		if err != nil {
 			retErr = err
 			return
@@ -372,7 +375,7 @@ func getEvent(db *sql.DB, eventID int) (response interface{}, retErr error) {
 			comments = append(comments, Comment{commentID, commentVersion, commentCreated, commentModified, body, labels})
 		}
 
-		content = append(content, Content{contentID, contentCreated, contentVersion, status, title, tag, comments})
+		content = append(content, Content{contentID, contentCreated, contentModified, contentVersion, status, title, tag, comments})
 	}
 
 	err = db.QueryRow(fmt.Sprintf("SELECT * FROM events WHERE event_id=%d;", eventID)).Scan(&eventID, &name, &created)
@@ -435,11 +438,12 @@ func getEvents(db *sql.DB, offset int, limit int) (response interface{}, retErr 
 			var comments []Comment
 			contentID := 0
 			contentCreated := ""
+			contentModified := ""
 			status := ""
 			contentVersion := 0
 			title := ""
 			tag := ""
-			err := contentRows.Scan(&contentID, &eventID, &contentCreated, &status, &contentVersion, &title, &tag)
+			err := contentRows.Scan(&contentID, &eventID, &contentCreated, &contentModified, &status, &contentVersion, &title, &tag)
 			if err != nil {
 				retErr = err
 				return
@@ -488,7 +492,7 @@ func getEvents(db *sql.DB, offset int, limit int) (response interface{}, retErr 
 				comments = append(comments, Comment{commentID, commentVersion, commentCreated, commentModified, body, labels})
 			}
 
-			content = append(content, Content{contentID, contentCreated, contentVersion, status, title, tag, comments})
+			content = append(content, Content{contentID, contentCreated, contentModified, contentVersion, status, title, tag, comments})
 		}
 
 		events = append(events, Event{eventID, name, created, content})
@@ -514,6 +518,7 @@ func getContent(db *sql.DB, eventID int, arg interface{}) (response interface{},
 	created := ""
 	contentID := 0
 	contentCreated := ""
+	contentModified := ""
 	status := ""
 	contentVersion := 0
 	title := ""
@@ -577,13 +582,13 @@ func getContent(db *sql.DB, eventID int, arg interface{}) (response interface{},
 			comments = append(comments, Comment{commentID, commentVersion, commentCreated, commentModified, body, labels})
 		}
 
-		err = db.QueryRow(fmt.Sprintf("SELECT * FROM content WHERE event_id='%d' AND content_id='%d'", eventID, contentID)).Scan(&contentID, &eventID, &contentCreated, &status, &contentVersion, &title, &tag)
+		err = db.QueryRow(fmt.Sprintf("SELECT * FROM content WHERE event_id='%d' AND content_id='%d'", eventID, contentID)).Scan(&contentID, &eventID, &contentCreated, &contentModified, &status, &contentVersion, &title, &tag)
 		if err != nil {
 			retErr = err
 			return
 		}
 
-		content := Content{contentID, contentCreated, contentVersion, status, title, tag, comments}
+		content := Content{contentID, contentCreated, contentModified, contentVersion, status, title, tag, comments}
 
 		err = db.QueryRow(fmt.Sprintf("SELECT * FROM events WHERE event_id=%d;", eventID)).Scan(&eventID, &name, &created)
 		if err != nil {
@@ -638,13 +643,13 @@ func getContent(db *sql.DB, eventID int, arg interface{}) (response interface{},
 			comments = append(comments, Comment{commentID, commentVersion, commentCreated, commentModified, body, labels})
 		}
 
-		err = db.QueryRow(fmt.Sprintf("SELECT * FROM content WHERE content_id='%d'", contentID)).Scan(&contentID, &eventID, &contentCreated, &status, &contentVersion, &title, &tag)
+		err = db.QueryRow(fmt.Sprintf("SELECT * FROM content WHERE content_id='%d'", contentID)).Scan(&contentID, &eventID, &contentCreated, &contentModified, &status, &contentVersion, &title, &tag)
 		if err != nil {
 			retErr = err
 			return
 		}
 
-		content := Content{contentID, contentCreated, contentVersion, status, title, tag, comments}
+		content := Content{contentID, contentCreated, contentModified, contentVersion, status, title, tag, comments}
 
 		err = db.QueryRow(fmt.Sprintf("SELECT * FROM events WHERE event_id=%d;", eventID)).Scan(&eventID, &name, &created)
 		if err != nil {
@@ -721,6 +726,7 @@ func getLabel(db *sql.DB, commentID int, labelID int) (resp interface{}, retErr 
 */
 func increaseContentVersion(db *sql.DB, contentID int) {
 	version := 0
+	nowISO := time.Now().UTC().Format(time.RFC3339)
 	query := `SELECT version FROM content WHERE content_id=$1;`
 
 	err := db.QueryRow(query, contentID).Scan(&version)
@@ -729,9 +735,9 @@ func increaseContentVersion(db *sql.DB, contentID int) {
 	}
 
 	version++
-	query = `UPDATE content SET version=$1 WHERE content_id=$2;`
+	query = `UPDATE content SET version=$1, modified=$2 WHERE content_id=$3;`
 
-	_, err = db.Exec(query, version, contentID)
+	_, err = db.Exec(query, version, nowISO, contentID)
 	if err != nil {
 		Fatal.Println(err)
 	}

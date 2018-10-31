@@ -44,8 +44,11 @@ func connect() (db *sql.DB, err error) {
 			}
 		}
 	}
-
-	db, err = sql.Open("postgres", fmt.Sprintf("host=%s dbname=%s user=%s password=%s sslmode=disable", host, database, user, password))
+	if password == "" {
+		db, err = sql.Open("postgres", fmt.Sprintf("host=%s dbname=%s user=%s sslmode=disable", host, database, user))
+	} else {
+		db, err = sql.Open("postgres", fmt.Sprintf("host=%s dbname=%s user=%s password=%s sslmode=disable", host, database, user, password))
+	}
 	return
 }
 
@@ -79,6 +82,7 @@ func iniTables(db *sql.DB) {
 			event_id INTEGER NOT NULL,
 			FOREIGN KEY (event_id) REFERENCES events (event_id) ON DELETE CASCADE,
 			created VARCHAR(255),
+			modified VARCHAR(255),
 			status VARCHAR(255),
 			version INTEGER NOT NULL,
 			title TEXT,
