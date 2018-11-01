@@ -113,8 +113,17 @@ func iniTables(db *sql.DB) {
 			label TEXT
 		)
 	`
+	indexesTable := `
+		CREATE TABLE indexes (
+			indexes_id SERIAL PRIMARY KEY,
+			es_id VARCHAR(255),
+			event_id INTEGER NOT NULL,
+			content_id INTEGER NOT NULL,
+			comment_id INTEGER NOT NULL
+		)
+	`
 
-	tables := []string{eventTable, contentTable, commentTable, labelsTable}
+	tables := []string{eventTable, contentTable, commentTable, labelsTable, indexesTable}
 
 	for _, q := range tables {
 		_, err := db.Exec(q)

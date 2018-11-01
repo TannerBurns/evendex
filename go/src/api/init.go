@@ -27,7 +27,7 @@ func main() {
 	iniTables(db)
 
 	Info.Printf("Creating ES Index")
-	dat, err := ioutil.ReadFile("src/init/mapping/evendex_map.json")
+	dat, err := ioutil.ReadFile("src/api/mapping/evendex_map.json")
 	if err != nil {
 		log.Fatal(err)
 	}

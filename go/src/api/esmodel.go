@@ -24,28 +24,6 @@ type IndexedComment struct {
 	CommentModified string `json:"comment_modified"`
 }
 
-type UpdateByQuery struct {
-	//Query  Query  `json:"query"`
-	Script Script `json:"script"`
-}
-
-type Query struct {
-	Bool BoolQuery `json:"bool"`
-}
-
-type BoolQuery struct {
-	Must []Term `json:"must"`
-}
-
-type Term struct {
-	term map[string]int `json:"term"`
-}
-
-type Script struct {
-	source string `"json:source"`
-	lang   string `"json:lang"`
-}
-
 func addDoc(eventID int, contentID int, commentID int) {
 	var (
 		eventCreated    string
@@ -121,12 +99,141 @@ func addDoc(eventID int, contentID int, commentID int) {
 		return
 	}
 
-	_ = postDoc("evendex", string(dat))
+	resp := postDoc("evendex", string(dat))
+	var respMap map[string]interface{}
+	err = json.Unmarshal([]byte(resp), &respMap)
+	if err != nil {
+		Error.Printf("ERROR - esmodel - addDoc - Failed to unMarshal response - %s", err)
+		return
+	}
+
+	esID := respMap["_id"]
+	indexID := 0
+	query := `INSERT INTO indexes (es_id, event_id, content_id, comment_id) VALUES($1, $2, $3, $4) RETURNING indexes_id`
+	err = db.QueryRow(query, esID, eventID, contentID, commentID).Scan(&indexID)
+	if err != nil {
+		Error.Printf("ERROR - esmodel - addDoc - Failed to insert into indexes table - %s", err)
+		return
+	}
 
 }
 
 func updateEsStatus(contentID int, status string) {
-	query := []byte(fmt.Sprintf(`{"query": {"bool": {"must": [{"term": {"content_id": %d}}]}}, "script": {"source": "ctx._source.status='%s'", "lang": "painless"}}`, contentID, status))
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
 
-	_ := updateByQuery("evendex", query)
+	esquery := []byte(fmt.Sprintf(`{"script": {"source": "ctx._source.status='%s';", "lang": "painless"}}`, status))
+	query := fmt.Sprintf("SELECT es_id FROM indexes WHERE content_id=%d", contentID)
+
+	rows, err := db.Query(query)
+	if err != nil {
+		Error.Printf("ERROR - esmodel - updateEsStatus - Failed to update- %s", err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		esID := ""
+		rows.Scan(&esID)
+		_ = updateIndex("evendex", esID, esquery)
+	}
+}
+
+func updateEsContentModified(contentID int, modified string) {
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	esquery := []byte(fmt.Sprintf(`{"script": {"source": "ctx._source.content_modified='%s';", "lang": "painless"}}`, modified))
+	query := fmt.Sprintf("SELECT es_id FROM indexes WHERE content_id=%d", contentID)
+
+	rows, err := db.Query(query)
+	if err != nil {
+		Error.Printf("ERROR - esmodel - updateEsStatus - Failed to update- %s", err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		esID := ""
+		rows.Scan(&esID)
+		_ = updateIndex("evendex", esID, esquery)
+	}
+}
+
+func updateEsContentVersion(contentID int, version int) {
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	esquery := []byte(fmt.Sprintf(`{"script": {"source": "ctx._source.content_version=%d;", "lang": "painless"}}`, version))
+	query := fmt.Sprintf("SELECT es_id FROM indexes WHERE content_id=%d", contentID)
+
+	rows, err := db.Query(query)
+	if err != nil {
+		Error.Printf("ERROR - esmodel - updateEsStatus - Failed to update- %s", err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		esID := ""
+		rows.Scan(&esID)
+		_ = updateIndex("evendex", esID, esquery)
+	}
+}
+
+func updateEsCommentVersion(commentID int, version int) {
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	esquery := []byte(fmt.Sprintf(`{"script": {"source": "ctx._source.comment_version=%d;", "lang": "painless"}}`, version))
+	query := fmt.Sprintf("SELECT es_id FROM indexes WHERE comment_id=%d", commentID)
+
+	rows, err := db.Query(query)
+	if err != nil {
+		Error.Printf("ERROR - esmodel - updateEsStatus - Failed to update- %s", err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		esID := ""
+		rows.Scan(&esID)
+		_ = updateIndex("evendex", esID, esquery)
+	}
+}
+
+func updateEsCommentModified(commentID int, modified string) {
+	db, err := connect()
+	if err != nil {
+		Fatal.Println(err)
+	}
+	defer db.Close()
+
+	esquery := []byte(fmt.Sprintf(`{"script": {"source": "ctx._source.comment_modified='%s';", "lang": "painless"}}`, modified))
+	query := fmt.Sprintf("SELECT es_id FROM indexes WHERE comment_id=%d", commentID)
+
+	rows, err := db.Query(query)
+	if err != nil {
+		Error.Printf("ERROR - esmodel - updateEsStatus - Failed to update- %s", err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		esID := ""
+		rows.Scan(&esID)
+		_ = updateIndex("evendex", esID, esquery)
+	}
 }

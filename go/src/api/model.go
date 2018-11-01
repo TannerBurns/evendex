@@ -240,7 +240,7 @@ func updateStatus(db *sql.DB, contentID int, status string) (eventID int, err er
 		return
 	}
 	increaseContentVersion(db, contentID)
-	go updateEsStatus(contentID, status)
+	updateEsStatus(contentID, status)
 	return
 }
 
@@ -742,10 +742,14 @@ func increaseContentVersion(db *sql.DB, contentID int) {
 	if err != nil {
 		Fatal.Println(err)
 	}
+	updateEsContentModified(contentID, nowISO)
+	updateEsContentVersion(contentID, version)
+
 }
 
 func increaseCommentVersion(db *sql.DB, commentID int) {
 	version := 0
+	nowISO := time.Now().UTC().Format(time.RFC3339)
 	query := `SELECT version FROM comment WHERE comment_id=$1;`
 
 	err := db.QueryRow(query, commentID).Scan(&version)
@@ -754,10 +758,12 @@ func increaseCommentVersion(db *sql.DB, commentID int) {
 	}
 
 	version++
-	query = `UPDATE comment SET version=$1 WHERE comment_id=$2;`
+	query = `UPDATE comment SET version=$1, modified=$2 WHERE comment_id=$3;`
 
-	_, err = db.Exec(query, version, commentID)
+	_, err = db.Exec(query, version, nowISO, commentID)
 	if err != nil {
 		Fatal.Println(err)
 	}
+	updateEsCommentModified(commentID, nowISO)
+	updateEsCommentVersion(commentID, version)
 }
