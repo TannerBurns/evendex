@@ -2,7 +2,7 @@
 
 # How to use
 
-    # Go
+    Go
 
         inside of go
         
@@ -11,7 +11,7 @@
         ./init conf/path/to/conf.conf
         ./api conf/path/to/conf.conf
         
-   # Docker
+    Docker
     
         inside of docker
         
