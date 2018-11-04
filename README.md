@@ -4,27 +4,16 @@
 
     # Go
 
-        inside 'src' folder
-
-        go build views.go model.go indexer.go
-
-        ./views /path/to/config/config.conf
-
-        go api hosted: http://localhost:8000/api/v1/events
+        inside of go
         
-        #Example Config.conf:
+        ./make
         
-            [postgresql]
-            host=localhost
-            database=evendex
-            user=postgres
-            password=password
+        ./init conf/path/to/conf.conf
+        ./api conf/path/to/conf.conf
+        
+   # Docker
     
-    # Flask
-
-        inside 'flask' folder
-
-        python views.py
-
-        flask frontend hosted: http://localhost:5000/events
-
+        inside of docker
+        
+        ./setup.sh
+        docker-compose up
