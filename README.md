@@ -6,6 +6,8 @@
 
         inside of go
         
+        use go get command on each library in requirements.txt
+        
         ./make
         
         ./init conf/path/to/conf.conf
